@@ -1,0 +1,207 @@
+/// Niri configuration
+spawn-at-startup "noctalia"
+spawn-at-startup "xwayland-satellite"
+spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP=niri"
+spawn-at-startup "systemctl" "--user" "stop" "xdg-desktop-portal" "xdg-desktop-portal-gnome"
+spawn-at-startup "systemctl" "--user" "start" "xdg-desktop-portal-gnome"
+
+
+environment {
+    DISPLAY ":0"
+}
+
+\1
+window-rule {
+    match app-id=r#"^org\.telegram\.desktop$"#
+    match app-id=r#"firefox"#
+    match app-id=r#"^com\.obsproject\.Studio$"#
+
+    opacity 0.85 
+
+    background-effect {
+        blur true
+        xray false 
+    }
+}//output "HDMI-A-1" {
+//    mode "1360x768@60.015"
+//    position x=0 y=0
+//    scale 1.0
+//}
+output "eDP-1" {
+    mode "1920x1080@120.002"
+    position x=1360 y=0
+    scale 1.0
+}
+
+input {
+    keyboard {
+        xkb {
+            layout "us,ru"
+            options "grp:win_space_toggle"
+        }
+    }
+}
+
+
+
+
+
+
+window-rule {
+    match {}
+    open-floating true
+    geometry-corner-radius 0
+    clip-to-geometry true
+}
+
+window-rule {
+    match title="Minecraft 26.1.2"
+    open-fullscreen true
+}
+
+
+// Специфичное правило для Noctalia (сохраняем размеры, но обновляем радиус)
+window-rule {
+    match app-id="dev.noctalia.Noctalia"
+    open-floating true
+    default-column-width { fixed 1080; }
+    default-window-height { fixed 920; }
+    geometry-corner-radius 0
+    clip-to-geometry true
+}
+
+debug {
+    honor-xdg-activation-with-invalid-serial
+}
+
+layer-rule {
+    match namespace="^noctalia-backdrop"
+    place-within-backdrop true
+}
+
+====
+// АНИМАЦИИ НА НАТИВНЫХ ПРУЖИНАХ (БЕЗ EASE И ШЕЙДЕРОВ)
+====
+animations {
+    // Открытие окна: мягкое раскрытие с микро-отскоком (ощущается очень живо)
+    window-open {
+        spring damping-ratio=0.85 stiffness=700 epsilon=0.0001
+    }
+
+    // Закрытие окна: быстрое и чистое затухание без лишнего дребезга
+    window-close {
+        spring damping-ratio=1.0 stiffness=850 epsilon=0.0001
+    }
+
+    // Переключение рабочих столов: плавное скольжение с лёгкой инерцией
+    workspace-switch {
+        spring damping-ratio=0.92 stiffness=680 epsilon=0.0001
+    }
+
+    // Горизонтальная прокрутка ленты: синхронная и бархатистая
+    horizontal-view-movement {
+        spring damping-ratio=0.95 stiffness=620 epsilon=0.0001
+    }
+
+    // Перемещение окон внутри стола
+    window-movement {
+        spring damping-ratio=0.95 stiffness=620 epsilon=0.0001
+    }
+
+    // Изменение размера окон (синхронизировано с движением)
+    window-resize {
+        spring damping-ratio=0.95 stiffness=620 epsilon=0.0001
+    }
+
+    // Режим обзора (Overview): мягкое разлётание и сборка окон
+    overview-open-close {
+        spring damping-ratio=0.92 stiffness=650 epsilon=0.0001
+    }
+}
+
+
+
+hotkey-overlay {
+    skip-at-startup
+}
+
+binds {
+    Super+D { spawn-sh "noctalia msg panel-toggle launcher"; }
+    Super+X { spawn-sh "noctalia msg panel-toggle control-center"; }
+    Super+V { spawn-sh "noctalia msg panel-toggle clipboard"; }
+    Super+K { spawn-sh "noctalia msg panel-toggle session"; }
+    Super+W { spawn "firefox"; }
+    Super+E { spawn "dolphin"; }
+
+    // Настройки Noctalia: теперь открытие, а не переключение
+    Super+I { spawn-sh "noctalia msg settings-open"; }
+
+    Super+Return { spawn "ghostty"; }
+    Super+S { spawn-sh "noctalia msg screenshot-region"; }
+    //Super+F { toggle-window-floating; }
+    Super+Q { close-window; }
+
+    // Новые бинды
+    Super+M { spawn "ghostty" "-e" "btop"; }
+    Super+B { spawn-sh "noctalia msg panel-toggle wallpaper"; }
+    Super+Shift+T { spawn-sh "noctalia msg theme-mode-toggle"; }
+
+    Mod+Left  { focus-column-left; }
+    Mod+Right { focus-column-right; }
+    Mod+Shift+Left  { move-column-left; }
+    Mod+Shift+Right { move-column-right; }
+	Super+F { toggle-window-floating; }
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+    Mod+6 { focus-workspace 6; }
+    Mod+7 { focus-workspace 7; }
+    Mod+8 { focus-workspace 8; }
+    Mod+9 { focus-workspace 9; }
+
+    Mod+Shift+1 { move-window-to-workspace 1; }
+    Mod+Shift+2 { move-window-to-workspace 2; }
+    Mod+Shift+3 { move-window-to-workspace 3; }
+    Mod+Shift+4 { move-window-to-workspace 4; }
+    Mod+Shift+5 { move-window-to-workspace 5; }
+    Mod+Shift+6 { move-window-to-workspace 6; }
+    Mod+Shift+7 { move-window-to-workspace 7; }
+    Mod+Shift+8 { move-window-to-workspace 8; }
+    Mod+Shift+9 { move-window-to-workspace 9; }
+
+    // Аудио
+    XF86AudioRaiseVolume { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"; }
+    XF86AudioLowerVolume { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"; }
+    XF86AudioMute { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"; }
+
+    // Медиа (playerctl)
+    XF86AudioPlay allow-when-locked=true { spawn-sh "playerctl play-pause"; }
+    XF86AudioStop allow-when-locked=true { spawn-sh "playerctl stop"; }
+    XF86AudioPrev allow-when-locked=true { spawn-sh "playerctl previous"; }
+    XF86AudioNext allow-when-locked=true { spawn-sh "playerctl next"; }
+
+    // Яркость
+    XF86MonBrightnessUp   { spawn-sh "brightnessctl set +5%"; }
+    XF86MonBrightnessDown { spawn-sh "brightnessctl set 5%-"; }
+
+    Super+L { spawn-sh "noctalia msg session lock"; }
+    "Mod+C" { spawn "sh" "-c" "$HOME/voxtype_toggle.sh"; }
+    "Alt+Return" { fullscreen-window; }
+}
+
+layout {
+    focus-ring {
+        off
+    }
+
+    border {
+        off
+    }
+
+    always-center-single-column true
+}
+
+
+include "noctalia.kdl"
