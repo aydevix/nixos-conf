@@ -14,10 +14,10 @@
 |---|---|
 | niri 26.04 | `programs.niri.enable` (порталы, gnome-keyring, сессия по умолчанию) |
 | Noctalia 5.5.0 | пакет + автозапуск `spawn-at-startup "noctalia"` в конфиге niri; конфиги в `/etc/niri/` и `/etc/xdg/noctalia/` |
-| SDDM + тема astronaut | `services.displayManager.sddm` (`wayland.enable`, `theme = "sddm-astronaut-theme"`), пакет `sddm-astronaut` |
+| SDDM | `services.displayManager.sddm` (`wayland.enable`, `theme = "sddm-astronaut-theme"`), пакет `sddm-astronaut` |
 | NVIDIA PRIME offload | `hardware.nvidia.prime.offload` (AMD `PCI:5@0:0:0`, NVIDIA `PCI:1@0:0:0`), open-модули, `modesetting` |
-| Telegram, Firefox, Vim, mpv, OBS, Ghostty, Dolphin, ffmpeg, btop | пакеты из канала |
-| Freesm Launcher | официальный AppImage 2.2.1 + `appimageTools.wrapType2` (распаковка, не сборка) |
+| Telegram, Firefox, Vim, mpv, OBS, Ghostty, Dolphin, ffmpeg, btop-cuda, ark, Discord, Audacity | пакеты из канала |
+| Freesm Launcher | официальный Flake |
 
 ### Про CUDA / NVENC (важно)
 
