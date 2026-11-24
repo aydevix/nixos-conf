@@ -8,11 +8,11 @@ order = [ "default" ]
     [bar.default]
     position = "bottom"
     thickness = 42
-    
+    # Делаем панель «парящей» с аккуратными отступами от краёв экрана
     margin_ends = 12
     panel_overlap = 8
     radius = 16
-    
+    # Полупрозрачный матовый фон и лёгкая тень для объёма
     background_opacity = 0.72
     shadow = true
     concave_edge_corners = false
@@ -29,13 +29,13 @@ order = [ "default" ]
     id = "g1"
     enabled = true
     members = [ "network", "volume", "battery" ]
-    
+    # Делаем капсулу чуть выразительнее и добавляем тонкую обводку
     fill = "surface"
     opacity = 0.35
     border_width = 1.0
     padding = 10.0
     widget_spacing = 6
-    
+    # Настройка анимации раскрытия «гармошки»
     accordion = true
     accordion_direction = "end"
     accordion_duration = 280

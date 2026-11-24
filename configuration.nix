@@ -1,12 +1,13 @@
-NixOS-конфигурация для ноутбука:
-  CPU: AMD Ryzen 5 5600H (Cezanne, 6C/12T)
-  GPU0: NVIDIA GTX 1650 Mobile (TU117, 01:00.0) — только рендер (PRIME offload)
-  GPU1: AMD Cezanne Vega  (05:00.0) — ведущий драйвер отображения (eDP-1, HDMI-A-1)
-  Экран: 1920x1080@120, Wi-Fi MT7921, Realtek RTL8111, NVMe 1 ТБ
-
-Подход: всё из готовых бинарников (cache.nixos.org), никакой локальной
-компиляции. См. README.md.
-{ config, pkgs, lib, ... }:
+# NixOS-конфигурация для ноутбука:
+#   CPU: AMD Ryzen 5 5600H (Cezanne, 6C/12T)
+#   GPU0: NVIDIA GTX 1650 Mobile (TU117, 01:00.0) — только рендер (PRIME offload)
+#   GPU1: AMD Cezanne Vega  (05:00.0) — ведущий драйвер отображения (eDP-1, HDMI-A-1)
+#   Экран: 1920x1080@120, Wi-Fi MT7921, Realtek RTL8111, NVMe 1 ТБ
+#
+# Подход: всё из готовых бинарников (cache.nixos.org), никакой локальной
+# компиляции. См. README.md.
+{ config, pkgs, lib, freesmlauncher, ... }:
+let
   freesm-launcher = pkgs.appimageTools.wrapType2 {
     pname = "freesm-launcher";
     version = "2.2.1";
@@ -14,6 +15,24 @@ NixOS-конфигурация для ноутбука:
       url = "https://github.com/FreesmTeam/FreesmLauncher/releases/download/2.2.1/FreesmLauncher-Linux-x86_64.AppImage";
       hash = "sha256-C9LnuT+3b8Ot1bjViNeVghdFi5ZBwOXWwiagTNpxDcI=";
     };
+
+    # Вот это заставит AppImage вообще запускаться
+    extraPkgs = pkgs: [ pkgs.fuse2 ];
+
+    # А это создаст ярлык в меню приложений
+    extraInstallCommands = ''
+      mkdir -p $out/share/applications
+      cat > $out/share/applications/freesm-launcher.desktop <<EOF
+      [Desktop Entry]
+      Name=Freesm Launcher
+      Comment=Minecraft Launcher
+      Exec=$out/bin/freesm-launcher
+      Icon=freesm-launcher
+      Terminal=false
+      Type=Application
+      Categories=Game;
+      EOF
+    '';
   };
 in
 {
@@ -24,22 +43,25 @@ in
     experimental-features = [ "nix-command" "flakes" ];
     auto-optimise-store = true;
   };
+  # NVIDIA-драйвер — unfree-пакет
   nixpkgs.config.allowUnfree = true;
   services.udisks2.enable = true;
   security.polkit.enable = true;
+  programs.fuse.enable = true;
   # ===================== Загрузчик =====================
   # В CachyOS стоял Limine; для NixOS — стандартный systemd-boot.
   # (Если захочешь Limine: boot.loader.limine.enable = true вместо строк ниже.)
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.systemd-boot.configurationLimit = 2; # в меню только 2 последних поколения
+  boot.loader.systemd-boot.configurationLimit = 8; # в меню только 2 последних поколения
 
   # ===================== Своп =====================
+  # Как в текущей системе: zram ~13.5 ГБ (100% от RAM), алгоритм zstd.
   zramSwap.enable = true;
   zramSwap.memoryPercent = 100;
 
   # ===================== Локаль и время =====================
-  time.timeZone = "Europe/Moscow";
+  time.timeZone = "Europe/Moscow"; # ← поменяй, если нужен другой пояс
   i18n.defaultLocale = "ru_RU.UTF-8";
   i18n.extraLocaleSettings = {
     LC_ADDRESS = "ru_RU.UTF-8";
@@ -52,15 +74,17 @@ in
     LC_TELEPHONE = "ru_RU.UTF-8";
     LC_TIME = "ru_RU.UTF-8";
   };
+  # Раскладка консоли; переключение us/ru (Win+Space) настроено в niri/config.kdl
   console.keyMap = "us";
 
   # ===================== Сеть и Bluetooth =====================
-  networking.hostName = "cachy";
+  networking.hostName = "nixos";
   networking.networkmanager.enable = true;
   hardware.bluetooth.enable = true;
   hardware.bluetooth.powerOnBoot = true;
 
   # ===================== Сервисы, нужные Noctalia =====================
+  # (wifi, bluetooth, профили питания, батарея — по докам Noctalia для NixOS)
   services.power-profiles-daemon.enable = true;
   services.upower.enable = true;
 
@@ -83,6 +107,8 @@ in
     open = true; # open-модули обязательны для драйвера >= 560; GTX 1650 (Turing) поддерживает
     powerManagement.enable = true; # корректное выключение GPU на ноутбуке
     videoAcceleration = true; # добавляет nvidia-vaapi-driver (аппаратное декодирование)
+    # nvidiaSettings — GUI-утилита nvidia-settings; в кэше на этой ревизии нет,
+    # а собирается она локально (meson+Qt). Отключаем ради «only-binary».
     nvidiaSettings = false;
     prime = {
       offload.enable = true;
@@ -126,7 +152,7 @@ in
   environment.systemPackages = with pkgs; [
     # --- из списка задачи ---
     noctalia # панель/оболочка (запускается из конфига niri)
-    sddm-astronaut # тема SDDM (имя темы: sddm-astronaut-theme)
+    where-is-my-sddm-theme # тема SDDM (имя темы: sddm-astronaut-theme)
     firefox
     telegram-desktop
     vim
@@ -134,9 +160,11 @@ in
     (obs-studio.override { cudaSupport = true; }) # NVENC: патчит runpath у obs-nvenc-test (nixpkgs #382666)
     ghostty
     kdePackages.dolphin
+    micro
+    discord
     ffmpeg # NVENC/VAAPI включены по умолчанию; CUDA не требуется
-    btop
-    freesm-launcher # AppImage, оборачивается локально (без компиляции)
+    btop-cuda
+    freesmlauncher.packages.${pkgs.system}.freesmlauncher # AppImage, оборачивается локально (без компиляции)
     fastfetch
     # --- Java для Freesm Launcher / Minecraft ---
     jdk21
@@ -153,6 +181,9 @@ in
     xdg-utils
     desktop-file-utils
     libnotify # уведомления
+    audacity
+    gh
+    kdePackages.ark
   ];
 
   # ===================== Прочее =====================

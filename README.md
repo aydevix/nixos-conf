@@ -1,4 +1,4 @@
-NixOS-конфигурация для этого ноутбука
+# NixOS-конфигурация для этого ноутбука
 
 Железо: **AMD Ryzen 5 5600H · NVIDIA GTX 1650 Mobile + AMD iGPU (Cezanne) ·
 13 ГБ RAM · NVMe 1 ТБ · Wi-Fi MT7921 · экран 1920×1080@120**.
@@ -8,7 +8,7 @@ NixOS-конфигурация для этого ноутбука
 `9996594bd380…` — на ней проверено наличие всех пакетов), без локальной
 компиляции.
 
-Состав
+## Состав
 
 | Компонент | Как реализован |
 |---|---|
@@ -19,7 +19,7 @@ NixOS-конфигурация для этого ноутбука
 | Telegram, Firefox, Vim, mpv, OBS, Ghostty, Dolphin, ffmpeg, btop | пакеты из канала |
 | Freesm Launcher | официальный AppImage 2.2.1 + `appimageTools.wrapType2` (распаковка, не сборка) |
 
-Про CUDA / NVENC (важно)
+### Про CUDA / NVENC (важно)
 
 Глобальный флаг `nixpkgs.config.cudaSupport = true` **не включался**:
 он пересобирает `obs-studio` и `ffmpeg` локально (их бинарников в кэше
@@ -37,12 +37,12 @@ NixOS-конфигурация для этого ноутбука
 `nixpkgs.config.cudaSupport = true` и смириться с локальной сборкой
 нужных пакетов.
 
-Файлы
+## Файлы
 
 ```
 nixos-config/
 ├── flake.nix                  # пин nixpkgs, nixosConfigurations.cachy
-├── configuration.nix          # весь соф t и сервисы
+├── configuration.nix          # весь софт и сервисы
 ├── hardware-configuration.nix # диски (UUID), initrd, микрокод
 ├── niri/
 │   ├── config.kdl             # ваш текущий конфиг niri (перенесён как есть)
@@ -55,7 +55,7 @@ nixos-config/
 fallback: если в `~/.config/niri/` и `~/.config/noctalia/` уже есть
 файлы (домашняя папка сохраняется), используются они.
 
-Установка
+## Установка
 
 1. **Отключи Secure Boot** в BIOS (иначе загрузчик не подпишется) и
    скачай NixOS Minimal ISO (x86_64) с <https://nixos.org/download>,
@@ -96,7 +96,7 @@ fallback: если в `~/.config/niri/` и `~/.config/noctalia/` уже есть
    ```
 6. Перезагрузка, сними флешку.
 
-После установки
+## После установки
 
 ```bash
 sudo nixos-rebuild switch --flake /etc/nixos#cachy   # применение изменений
@@ -112,17 +112,16 @@ nix build --dry-run /etc/nixos#nixosConfigurations.cachy.config.system.build.top
 (допустимо `will be built` только для самого замка системы/`buildEnv`
 и для FHS-обёртки Freesm — они не компилируют исходники).
 
-Что обычно захочется поменять
+## Что обычно захочется поменять
 
-- Часовой пояс — `time.timeZone` в `configuration.nix`.
-- Раскладка — `input.keyboard.xkb` в `niri/config.kdl`
+- **Часовой пояс** — `time.timeZone` в `configuration.nix`.
+- **Раскладка** — `input.keyboard.xkb` в `niri/config.kdl`
   (сейчас `us,ru` + переключение Win+Space).
-- Разрешение/частота экрана — блок `output "eDP-1"` в `niri/config.kdl`.
-- Обои/панель — `noctalia/config.toml` (папка обоев:
+- **Разрешение/частота экрана** — блок `output "eDP-1"` в `niri/config.kdl`.
+- **Обои/панель** — `noctalia/config.toml` (папка обоев:
   `~/.config/niri/wallpapers`).
-- Загрузчик — сейчас systemd-boot; для Limine (как в CachyOS):
+- **Загрузчик** — сейчас systemd-boot; для Limine (как в CachyOS):
   ```nix
   boot.loader.systemd-boot.enable = false;
   boot.loader.limine.enable = true;
   ```
- 
