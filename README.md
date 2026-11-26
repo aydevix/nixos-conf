@@ -1,7 +1,7 @@
 # NixOS-конфигурация для этого ноутбука
 
 Железо: **AMD Ryzen 5 5600H · NVIDIA GTX 1650 Mobile + AMD iGPU (Cezanne) ·
-13 ГБ RAM · NVMe 1 ТБ · Wi-Fi MT7921 · экран 1920×1080@120**.
+16 ГБ RAM · Wi-Fi MT7921 · экран 1920×1080@120**.
 
 Всё ПО собирается из **готовых бинарников** бинарного кэша
 `cache.nixos.org` (закреплённая ревизия `nixpkgs-unstable`
